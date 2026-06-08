@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система оценки преподавателей</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <h1>👨‍🏫 TeacherRating</h1>
+                </div>
+                <div class="navbar-menu">
+                    <a href="#" onclick="showHome()" class="nav-link active" id="nav-home">Главная</a>
+                    <a href="#" onclick="showTeachers()" class="nav-link" id="nav-teachers">Преподаватели</a>
+                    <a href="#" onclick="showFavorites()" class="nav-link" id="nav-favorites">Избранные</a>
+                    <div class="nav-user">
+                        <span id="user-name" style="display:none;"></span>
+                        <button onclick="toggleUserMenu()" class="user-btn" id="user-btn" style="display:none;">👤</button>
+                        <div class="user-menu" id="user-menu" style="display:none;">
+                            <a href="#" onclick="showAdmin()" class="menu-item">Панель администратора</a>
+                            <a href="#" onclick="logout()" class="menu-item">Выход</a>
+                        </div>
+                        <button onclick="showAuth()" class="auth-btn" id="auth-btn">Вход</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Auth Page -->
+            <div id="auth-page" class="page">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h2>Вход / Регистрация</h2>
+                        <form onsubmit="handleAuth(event)">
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" required placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Пароль:</label>
+                                <input type="password" id="password" required placeholder="Мин. 6 символов">
+                            </div>
+                            <div class="form-group">
+                                <label for="name" id="name-label" style="display:none;">Имя:</label>
+                                <input type="text" id="name" placeholder="Ваше имя" style="display:none;">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Вход</button>
+                        </form>
+                        <p class="auth-toggle">
+                            Нет аккаунта? <a href="#" onclick="toggleAuthMode()">Зарегистрируйтесь</a>
+                        </p>
+                        <div id="auth-error" class="error-message"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Page -->
+            <div id="home-page" class="page" style="display:none;">
+                <div class="container">
+                    <div class="hero">
+                        <h2>Добро пожаловать в систему оценки преподавателей!</h2>
+                        <p>Делитесь своим мнением о преподавателях и помогайте другим студентам</p>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3 id="stat-teachers">0</h3>
+                            <p>Преподавателей</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="stat-reviews">0</h3>
+                            <p>Оценок</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="stat-users">0</h3>
+                            <p>Студентов</p>
+                        </div>
+                    </div>
+
+                    <div class="featured-section">
+                        <h3>⭐ Топ преподавателей</h3>
+                        <div id="top-teachers" class="teachers-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teachers Page -->
+            <div id="teachers-page" class="page" style="display:none;">
+                <div class="container">
+                    <div class="page-header">
+                        <h2>Список преподавателей</h2>
+                        <button onclick="showAddTeacher()" class="btn btn-primary" id="add-teacher-btn" style="display:none;">+ Добавить преподавателя</button>
+                    </div>
+
+                    <div class="search-filter">
+                        <input type="text" id="search-input" placeholder="Поиск по имени..." onkeyup="searchTeachers()">
+                        <select id="filter-department" onchange="filterTeachers()">
+                            <option value="">Все кафедры</option>
+                            <option value="IT">Информационные технологии</option>
+                            <option value="Math">Математика</option>
+                            <option value="Physics">Физика</option>
+                            <option value="Chemistry">Химия</option>
+                            <option value="Literature">Литература</option>
+                        </select>
+                        <select id="sort-by" onchange="sortTeachers()">
+                            <option value="rating">По рейтингу</option>
+                            <option value="name">По имени</option>
+                            <option value="reviews">По количеству оценок</option>
+                        </select>
+                    </div>
+
+                    <div id="teachers-list" class="teachers-grid"></div>
+                </div>
+            </div>
+
+            <!-- Teacher Detail Page -->
+            <div id="teacher-detail-page" class="page" style="display:none;">
+                <div class="container">
+                    <button onclick="showTeachers()" class="btn btn-secondary">← Назад</button>
+                    <div id="teacher-detail" class="teacher-detail"></div>
+                </div>
+            </div>
+
+            <!-- Favorites Page -->
+            <div id="favorites-page" class="page" style="display:none;">
+                <div class="container">
+                    <h2>Избранные преподаватели</h2>
+                    <div id="favorites-list" class="teachers-grid"></div>
+                    <div id="no-favorites" class="empty-message" style="display:none;">
+                        <p>У вас еще нет избранных преподавателей</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="admin-page" class="page" style="display:none;">
+                <div class="container">
+                    <h2>📊 Панель администратора</h2>
+                    
+                    <div class="admin-tabs">
+                        <button onclick="switchAdminTab('users')" class="admin-tab-btn active">Пользователи</button>
+                        <button onclick="switchAdminTab('teachers')" class="admin-tab-btn">Преподаватели</button>
+                        <button onclick="switchAdminTab('reviews')" class="admin-tab-btn">Оценки</button>
+                        <button onclick="switchAdminTab('analytics')" class="admin-tab-btn">Аналитика</button>
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div id="admin-users" class="admin-tab active">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Имя</th>
+                                    <th>Дата регистрации</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Teachers Tab -->
+                    <div id="admin-teachers" class="admin-tab" style="display:none;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Кафедра</th>
+                                    <th>Рейтинг</th>
+                                    <th>Оценок</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachers-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div id="admin-reviews" class="admin-tab" style="display:none;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Преподаватель</th>
+                                    <th>Оценка</th>
+                                    <th>Комментарий</th>
+                                    <th>Автор</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviews-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div id="admin-analytics" class="admin-tab" style="display:none;">
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <h3>Всего пользователей</h3>
+                                <p id="analytics-users" class="analytics-number">0</p>
+                            </div>
+                            <div class="analytics-card">
+                                <h3>Всего преподавателей</h3>
+                                <p id="analytics-teachers" class="analytics-number">0</p>
+                            </div>
+                            <div class="analytics-card">
+                                <h3>Всего оценок</h3>
+                                <p id="analytics-reviews" class="analytics-number">0</p>
+                            </div>
+                            <div class="analytics-card">
+                                <h3>Средний рейтинг</h3>
+                                <p id="analytics-avg-rating" class="analytics-number">0</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Распределение рейтингов</h3>
+                            <canvas id="rating-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Teacher Modal -->
+            <div id="add-teacher-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h2>Добавить преподавателя</h2>
+                    <form onsubmit="handleAddTeacher(event)">
+                        <div class="form-group">
+                            <label for="teacher-name">Имя:</label>
+                            <input type="text" id="teacher-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-department">Кафедра:</label>
+                            <select id="teacher-department" required>
+                                <option value="">Выберите кафедру</option>
+                                <option value="IT">Информационные технологии</option>
+                                <option value="Math">Математика</option>
+                                <option value="Physics">Физика</option>
+                                <option value="Chemistry">Химия</option>
+                                <option value="Literature">Литература</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-bio">Описание:</label>
+                            <textarea id="teacher-bio"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
